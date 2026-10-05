@@ -1,0 +1,687 @@
+/* Identité : le vocabulaire visuel des gares françaises et des cartes de randonnée.
+   Encre bleu nuit des fiches horaires, jaune des affiches « Départs »,
+   rouge des balises de sentier, vert des itinéraires à pied. */
+
+:root {
+  --encre: #17324d;
+  --encre-douce: #4d6379;
+  --fond: #eef2f1;
+  --panneau: #ffffff;
+  --trait: #d3dcdf;
+  --depart: #ffcf33;
+  --resultat: #c8102e;
+  --marche: #1f7a5c;
+  --marche-fond: #e4f1ec;
+  --alerte-fond: #fff5cf;
+
+  /* --police-texte et --police-titres sont définies par next/font dans app/layout.tsx. */
+  --police-texte-pile: var(--police-texte, "Barlow"), system-ui, sans-serif;
+  --police-titres-pile: var(--police-titres, "Barlow Semi Condensed"), "Arial Narrow", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--fond);
+  color: var(--encre);
+  font-family: var(--police-texte-pile);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+h1,
+h2,
+p,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--depart);
+  outline-offset: 2px;
+}
+
+/* --- Structure : panneau à gauche, carte à droite ; sur mobile la carte passe au-dessus --- */
+
+.appli {
+  display: grid;
+  grid-template-columns: minmax(22rem, 27rem) 1fr;
+  height: 100dvh;
+}
+
+.panneau {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem 1.5rem 2rem;
+  background: var(--panneau);
+  border-right: 1px solid var(--trait);
+  overflow-y: auto;
+}
+
+/* Le panneau défile : ses blocs gardent leur hauteur au lieu de se tasser les uns sur les autres. */
+.panneau > * {
+  flex: none;
+}
+
+.carte-zone {
+  position: relative;
+  min-height: 0;
+}
+
+.carte {
+  width: 100%;
+  height: 100%;
+  background: var(--fond);
+}
+
+.carte-attente {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--encre-douce);
+}
+
+
+/* --- En-tête et onglets --- */
+
+.entete h1 {
+  font-family: var(--police-titres-pile);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.entete p {
+  margin-top: 0.35rem;
+  color: var(--encre-douce);
+}
+
+.onglets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--encre);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.onglets button {
+  padding: 0.55rem 0.75rem;
+  background: var(--panneau);
+  border: 0;
+  font-family: var(--police-titres-pile);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.onglets button[aria-pressed="true"] {
+  background: var(--encre);
+  color: #fff;
+}
+
+.erreur {
+  padding: 0.75rem 1rem;
+  background: #fde8ea;
+  border-left: 4px solid var(--resultat);
+}
+
+/* --- Éléments communs --- */
+
+.bouton {
+  padding: 0.6rem 1.25rem;
+  background: var(--depart);
+  border: 2px solid var(--encre);
+  border-radius: 0.5rem;
+  font-family: var(--police-titres-pile);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.bouton--secondaire {
+  background: var(--panneau);
+}
+
+.lien {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--encre);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+label,
+.exemples h2 {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--police-titres-pile);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+textarea,
+input[type="search"] {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  background: var(--panneau);
+  border: 2px solid var(--encre);
+  border-radius: 0.5rem;
+  resize: vertical;
+}
+
+::placeholder {
+  color: var(--encre-douce);
+  opacity: 1;
+}
+
+/* --- Demander --- */
+
+.assistant,
+.explorer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.saisie__gare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--alerte-fond);
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.saisie__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+}
+
+.exemples li + li {
+  margin-top: 0.5rem;
+}
+
+.exemples button {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  background: var(--fond);
+  border: 0;
+  border-left: 4px solid var(--depart);
+  border-radius: 0 0.5rem 0.5rem 0;
+  text-align: left;
+}
+
+.exemples button:hover:not(:disabled) {
+  background: var(--alerte-fond);
+}
+
+.fil {
+  color: var(--encre-douce);
+  font-size: 0.9375rem;
+}
+
+.fil li {
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--trait);
+}
+
+.fil li + li {
+  margin-top: 0.35rem;
+}
+
+.reponse {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reponse__question {
+  font-family: var(--police-titres-pile);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.criteres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.criteres li {
+  padding: 0.15rem 0.6rem;
+  background: var(--fond);
+  border-radius: 1rem;
+}
+
+.criteres .criteres__depart {
+  background: var(--depart);
+  font-weight: 600;
+}
+
+.criteres .criteres__theme {
+  background: var(--marche-fond);
+  color: #14523e;
+  font-weight: 500;
+}
+
+.reponse__avertissement {
+  padding: 0.5rem 0.75rem;
+  background: var(--alerte-fond);
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.reponse__moteur {
+  color: var(--encre-douce);
+  font-size: 0.875rem;
+}
+
+/* --- Une destination, dessinée comme un plan de ligne --- */
+
+.itineraires {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.itin {
+  padding: 1rem 1rem 0.9rem;
+  border: 2px solid var(--trait);
+  border-radius: 0.75rem;
+}
+
+.itin--active {
+  border-color: var(--encre);
+  box-shadow: 4px 4px 0 var(--depart);
+}
+
+.itin__entete {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.itin__rang {
+  flex: none;
+  align-self: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--resultat);
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--police-titres-pile);
+  font-weight: 700;
+  line-height: 1.75rem;
+  text-align: center;
+}
+
+.itin__nom {
+  flex: 1;
+  font-family: var(--police-titres-pile);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.itin__duree {
+  flex: none;
+  font-family: var(--police-titres-pile);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Le « plan de ligne » : un trait vertical, plein pour le train, pointillé pour la marche. */
+.trace {
+  margin-left: 0.8rem;
+  padding-left: 1.2rem;
+  border-left: 3px solid var(--encre);
+}
+
+/* Train : le trait part du centre de la première pastille et s'arrête au centre de la dernière. */
+.trace--train {
+  margin-top: 0.9rem;
+  padding-left: calc(1.2rem + 3px);
+  border-left: 0;
+  background: linear-gradient(var(--encre), var(--encre)) no-repeat left 0.5rem / 3px calc(100% - 1rem);
+}
+
+.trace--marche {
+  padding-top: 0.6rem;
+  border-left: 3px dotted var(--marche);
+}
+
+.trace li {
+  position: relative;
+}
+
+.trace__arret {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Pastille de gare, posée sur le trait */
+.trace__arret::before,
+.trace__lieu::before {
+  content: "";
+  position: absolute;
+  top: 0.2em;
+  left: calc(-1.2rem - 1.5px - 0.4rem);
+  width: 0.8rem;
+  height: 0.8rem;
+  background: var(--panneau);
+  border: 3px solid var(--encre);
+  border-radius: 50%;
+}
+
+.trace__arret--depart::before {
+  background: var(--depart);
+}
+
+.trace__troncon {
+  padding: 0.3rem 0 0.45rem;
+  color: var(--encre-douce);
+  font-size: 0.9375rem;
+}
+
+.trace__lieu {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 0.75rem;
+  padding-bottom: 0.6rem;
+}
+
+.trace__lieu::before {
+  top: 0.3em;
+  left: calc(-1.2rem - 1.5px - 0.3rem);
+  width: 0.6rem;
+  height: 0.6rem;
+  background: var(--marche);
+  border: 0;
+}
+
+.trace__nom {
+  grid-column: 1;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.trace__minutes {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--marche);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.trace__themes {
+  grid-column: 1 / -1;
+  color: var(--encre-douce);
+  font-size: 0.875rem;
+}
+
+.trace__lieu--reste {
+  display: block;
+  color: var(--encre-douce);
+  font-size: 0.9375rem;
+}
+
+.trace__lieu--reste::before {
+  background: var(--panneau);
+  border: 2px solid var(--marche);
+}
+
+.itin__pourquoi {
+  margin-top: 0.4rem;
+  font-size: 0.9375rem;
+}
+
+.itin__score {
+  margin-top: 0.6rem;
+  font-size: 0.9375rem;
+}
+
+.itin__score summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.itin__score dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+
+.jauge dt {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.jauge__poids {
+  color: var(--encre-douce);
+}
+
+.jauge dd {
+  height: 0.4rem;
+  margin-top: 0.15rem;
+  background: var(--fond);
+  border-radius: 0.2rem;
+}
+
+.jauge__barre {
+  display: block;
+  height: 100%;
+  background: var(--encre);
+  border-radius: 0.2rem;
+}
+
+.itin__penalite {
+  margin-top: 0.5rem;
+  color: var(--encre-douce);
+  font-size: 0.875rem;
+}
+
+/* --- Explorer --- */
+
+.explorer__compte,
+.fiche__resume {
+  color: var(--encre-douce);
+  font-size: 0.9375rem;
+}
+
+.explorer > .lien,
+.explorer > .bouton {
+  align-self: flex-start;
+}
+
+.fiche__nom {
+  font-family: var(--police-titres-pile);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.gares li {
+  border-bottom: 1px solid var(--trait);
+}
+
+.gares button {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.6rem 0.25rem;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.gares button:hover {
+  background: var(--fond);
+}
+
+.gares__nom {
+  font-weight: 500;
+}
+
+.gares__compte {
+  flex: none;
+  color: var(--encre-douce);
+  font-size: 0.875rem;
+}
+
+.filtres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filtres button {
+  padding: 0.2rem 0.75rem;
+  background: var(--panneau);
+  border: 2px solid var(--trait);
+  border-radius: 1rem;
+  font-size: 0.9375rem;
+}
+
+.filtres button[aria-pressed="true"] {
+  background: var(--marche-fond);
+  border-color: var(--marche);
+  font-weight: 600;
+}
+
+.lieux li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--trait);
+}
+
+.lieux__nom {
+  grid-column: 1;
+  font-weight: 500;
+}
+
+.lieux__minutes {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--marche);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lieux__themes {
+  grid-column: 1 / -1;
+  color: var(--encre-douce);
+  font-size: 0.875rem;
+}
+
+/* --- Carte : numéros des destinations et infobulles --- */
+
+.leaflet-container {
+  font-family: var(--police-texte-pile);
+}
+
+.leaflet-tooltip.carte-numero {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+  font-family: var(--police-titres-pile);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.leaflet-tooltip.carte-numero::before {
+  display: none;
+}
+
+.leaflet-tile-pane {
+  filter: saturate(0.55);
+}
+
+.leaflet-interactive:focus-visible {
+  outline: 3px solid var(--depart);
+}
+
+/* --- Mobile : la carte au-dessus, le panneau en dessous. Placé en dernier pour primer sur le reste. --- */
+
+@media (max-width: 52rem) {
+  .appli {
+    grid-template-columns: 1fr;
+    grid-template-rows: 40dvh 1fr;
+  }
+
+  .carte-zone {
+    grid-row: 1;
+  }
+
+  .panneau {
+    grid-row: 2;
+    gap: 1rem;
+    padding: 1rem 1rem 1.5rem;
+    border-right: 0;
+    border-top: 4px solid var(--depart);
+  }
+
+  .entete h1 {
+    font-size: 1.5rem;
+  }
+
+  .entete p {
+    display: none;
+  }
+}

@@ -1,0 +1,31 @@
+stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station
+StopArea:OCE87747006,Grenoble,45.1915,5.7145,1,
+StopPoint:OCETrain TER-87747006,Grenoble,45.1915,5.7145,0,StopArea:OCE87747006
+StopArea:OCE87747402,Grenoble-Universités-Gières,45.1853,5.7853,1,
+StopPoint:OCETrain TER-87999999,Grenoble-Universités-Gières,45.1858,5.785900000000001,0,StopArea:OCE87747402
+StopArea:OCE87747337,Voiron,45.3643,5.5935,1,
+StopPoint:OCETrain TER-87747337,Voiron,45.3643,5.5935,0,StopArea:OCE87747337
+StopArea:OCE87747345,Rives,45.353,5.499,1,
+StopPoint:OCETrain TER-87747345,Rives,45.353,5.499,0,StopArea:OCE87747345
+StopArea:OCE87761494,Saint-Marcellin (Isère),45.152,5.319,1,
+StopPoint:OCETrain TER-87761494,Saint-Marcellin (Isère),45.152,5.319,0,StopArea:OCE87761494
+StopArea:OCE87747139,Vif,45.056,5.67,1,
+StopPoint:OCETrain TER-87747139,Vif,45.056,5.67,0,StopArea:OCE87747139
+StopArea:OCE87747154,Monestier-de-Clermont,44.917,5.635,1,
+StopPoint:OCETrain TER-87747154,Monestier-de-Clermont,44.917,5.635,0,StopArea:OCE87747154
+StopArea:OCE87747170,Clelles-Mens,44.826,5.624,1,
+StopPoint:OCETrain TER-87747170,Clelles-Mens,44.826,5.624,0,StopArea:OCE87747170
+StopArea:OCE87741009,Chambéry-Challes-les-Eaux,45.571,5.9195,1,
+StopPoint:OCETrain TER-87741009,Chambéry-Challes-les-Eaux,45.571,5.9195,0,StopArea:OCE87741009
+StopArea:OCE87741132,Aix-les-Bains-Le Revard,45.688,5.909,1,
+StopPoint:OCETrain TER-87741132,Aix-les-Bains-Le Revard,45.688,5.909,0,StopArea:OCE87741132
+StopArea:OCE87746008,Annecy,45.902,6.122,1,
+StopPoint:OCETrain TER-87746008,Annecy,45.902,6.122,0,StopArea:OCE87746008
+StopArea:OCE87723197,Lyon Part-Dieu,45.7605,4.86,1,
+StopPoint:OCETrain TER-87723197,Lyon Part-Dieu,45.7605,4.86,0,StopArea:OCE87723197
+StopArea:OCE87761007,Valence Ville,44.928,4.893,1,
+StopPoint:OCETrain TER-87761007,Valence Ville,44.928,4.893,0,StopArea:OCE87761007
+StopArea:OCE87686006,Paris Gare de Lyon,48.8443,2.374,1,
+StopPoint:OCETrain TER-87686006,Paris Gare de Lyon,48.8443,2.374,0,StopArea:OCE87686006
+StopPoint:OCECar TER-87747139,Vif (car),45.0561,5.6702,0,StopArea:OCE87747139
+StopPoint:OCECar TER-87747006,Grenoble (car),45.1916,5.7146,0,StopArea:OCE87747006

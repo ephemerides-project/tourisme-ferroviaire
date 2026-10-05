@@ -1,0 +1,175 @@
+[
+ {
+  "nom": "Grenoble",
+  "libellecourt": "GRE",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 5.7145,
+   "lat": 45.1915
+  },
+  "codeinsee": "38185",
+  "codes_uic": "87747006;87747014"
+ },
+ {
+  "nom": "Grenoble-Universités-Gières",
+  "libellecourt": "GIE",
+  "segment_drg": "B",
+  "position_geographique": {
+   "lon": 5.7853,
+   "lat": 45.1853
+  },
+  "codeinsee": "38179",
+  "codes_uic": "87747402"
+ },
+ {
+  "nom": "Voiron",
+  "libellecourt": "VOI",
+  "segment_drg": "B",
+  "position_geographique": {
+   "lon": 5.5935,
+   "lat": 45.3643
+  },
+  "codeinsee": "38563",
+  "codes_uic": "87747337"
+ },
+ {
+  "nom": "Rives",
+  "libellecourt": "RIV",
+  "segment_drg": "C",
+  "position_geographique": {
+   "lon": 5.499,
+   "lat": 45.353
+  },
+  "codeinsee": "38337",
+  "codes_uic": "87747345"
+ },
+ {
+  "nom": "Saint-Marcellin (Isère)",
+  "libellecourt": "SMA",
+  "segment_drg": "B",
+  "position_geographique": {
+   "lon": 5.319,
+   "lat": 45.152
+  },
+  "codeinsee": "38416",
+  "codes_uic": "87761494"
+ },
+ {
+  "nom": "Vif",
+  "libellecourt": "VIF",
+  "segment_drg": "C",
+  "position_geographique": {
+   "lon": 5.67,
+   "lat": 45.056
+  },
+  "codeinsee": "38545",
+  "codes_uic": "87747139"
+ },
+ {
+  "nom": "Monestier-de-Clermont",
+  "libellecourt": "MON",
+  "segment_drg": "C",
+  "position_geographique": {
+   "lon": 5.635,
+   "lat": 44.917
+  },
+  "codeinsee": "38242",
+  "codes_uic": "87747154"
+ },
+ {
+  "nom": "Clelles-Mens",
+  "libellecourt": "CLE",
+  "segment_drg": "C",
+  "position_geographique": {
+   "lon": 5.624,
+   "lat": 44.826
+  },
+  "codeinsee": "38113",
+  "codes_uic": "87747170"
+ },
+ {
+  "nom": "Chambéry-Challes-les-Eaux",
+  "libellecourt": "CHA",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 5.9195,
+   "lat": 45.571
+  },
+  "codeinsee": "73065",
+  "codes_uic": "87741009"
+ },
+ {
+  "nom": "Aix-les-Bains-Le Revard",
+  "libellecourt": "AIX",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 5.909,
+   "lat": 45.688
+  },
+  "codeinsee": "73008",
+  "codes_uic": "87741132"
+ },
+ {
+  "nom": "Annecy",
+  "libellecourt": "ANN",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 6.122,
+   "lat": 45.902
+  },
+  "codeinsee": "74010",
+  "codes_uic": "87746008"
+ },
+ {
+  "nom": "Lyon Part-Dieu",
+  "libellecourt": "LPD",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 4.86,
+   "lat": 45.7605
+  },
+  "codeinsee": "69383",
+  "codes_uic": "87723197"
+ },
+ {
+  "nom": "Valence Ville",
+  "libellecourt": "VAL",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 4.893,
+   "lat": 44.928
+  },
+  "codeinsee": "26362",
+  "codes_uic": "87761007"
+ },
+ {
+  "nom": "Paris Gare de Lyon",
+  "libellecourt": "PLY",
+  "segment_drg": "A",
+  "position_geographique": {
+   "lon": 2.374,
+   "lat": 48.8443
+  },
+  "codeinsee": "75112",
+  "codes_uic": "87686006"
+ },
+ {
+  "nom": "Gare sans position",
+  "libellecourt": "XXX",
+  "segment_drg": "C",
+  "position_geographique": null,
+  "codeinsee": "38000",
+  "codes_uic": "87000001"
+ },
+ {
+  "nom": "Voiron",
+  "libellecourt": "VOI",
+  "segment_drg": "B",
+  "position_geographique": {
+   "lon": 5.5935,
+   "lat": 45.3643
+  },
+  "codeinsee": "38563",
+  "codes_uic": "87747337"
+ }
+]

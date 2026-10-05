@@ -1,0 +1,23 @@
+[
+  {"question": "Je cherche une sortie nature à moins de 1h30 de Grenoble, avec une randonnée facile et moins de 20 minutes de marche depuis la gare.", "attendu": {"origine": "Grenoble", "duree_max_min": 90, "marche_max_min": 20, "themes": ["nature", "randonnee"], "difficulte": "facile"}, "serie": "sujet"},
+  {"question": "Je voudrais passer une journée à la montagne sans voiture, à moins de 2 heures de Grenoble, avec une activité adaptée à des enfants.", "attendu": {"origine": "Grenoble", "duree_max_min": 120, "themes": ["montagne"], "public": "famille"}, "serie": "sujet"},
+  {"question": "Je pars avec deux enfants, je veux moins de 2 heures de train, une activité nature et moins de 20 minutes de marche.", "attendu": {"duree_max_min": 120, "marche_max_min": 20, "themes": ["nature"], "public": "famille"}, "serie": "sujet"},
+  {"question": "Je veux aller à la montagne sans voiture.", "attendu": {"themes": ["montagne"]}, "serie": "sujet"},
+  {"question": "Je cherche une activité à moins d'une heure de Grenoble.", "attendu": {"origine": "Grenoble", "duree_max_min": 60}, "serie": "sujet"},
+  {"question": "Que faire avec deux enfants ?", "attendu": {"public": "famille"}, "serie": "sujet"},
+  {"question": "Je cherche une destination avec randonnée et patrimoine.", "attendu": {"themes": ["patrimoine", "randonnee"]}, "serie": "sujet"},
+  {"question": "Je ne veux pas marcher plus de 15 minutes après la gare.", "attendu": {"marche_max_min": 15}, "serie": "sujet"},
+  {"question": "Je veux une activité nature accessible en train.", "attendu": {"themes": ["nature"]}, "serie": "sujet"},
+  {"question": "On aimerait visiter un château pas trop loin de Lyon, une heure de train maximum.", "attendu": {"origine": "Lyon", "duree_max_min": 60, "themes": ["patrimoine"]}, "serie": "nouvelles"},
+  {"question": "T'aurais une idée de balade en forêt depuis Chambéry ? Pas plus de trois quarts d'heure de trajet.", "attendu": {"origine": "Chambéry", "duree_max_min": 45, "themes": ["nature", "randonnee"]}, "serie": "nouvelles"},
+  {"question": "Je me déplace en fauteuil roulant : je cherche un musée à moins de 10 minutes de la gare, au départ de Grenoble.", "attendu": {"origine": "Grenoble", "marche_max_min": 10, "themes": ["culture"]}, "serie": "nouvelles"},
+  {"question": "Un bon restaurant de terroir à une demi-heure de Valence.", "attendu": {"origine": "Valence", "duree_max_min": 30, "themes": ["gastronomie"]}, "serie": "nouvelles"},
+  {"question": "Sortie avec mes deux enfants, 1h de train maximum depuis Lyon.", "attendu": {"origine": "Lyon", "duree_max_min": 60, "public": "famille"}, "serie": "nouvelles"},
+  {"question": "Je veux skier sans prendre la voiture, départ de Grenoble.", "attendu": {"origine": "Grenoble", "themes": ["montagne"]}, "serie": "nouvelles"},
+  {"question": "Une expo ou un musée à 20 min à pied maximum de la gare, à moins d'1h15 de Chambéry.", "attendu": {"origine": "Chambéry", "duree_max_min": 75, "marche_max_min": 20, "themes": ["culture"]}, "serie": "nouvelles"},
+  {"question": "Randonnée sportive à la journée : je pars de Valence et je peux faire jusqu'à deux heures et demie de train.", "attendu": {"origine": "Valence", "duree_max_min": 150, "themes": ["randonnee"], "difficulte": "difficile"}, "serie": "nouvelles"},
+  {"question": "Un week-end dégustation de vins, pas plus d'une heure trente depuis Lyon.", "attendu": {"origine": "Lyon", "duree_max_min": 90, "themes": ["gastronomie"]}, "serie": "nouvelles"},
+  {"question": "Je n'ai qu'une demi-journée : quelque chose de culturel à 40 minutes de Grenoble, sans trop marcher.", "attendu": {"origine": "Grenoble", "duree_max_min": 40, "themes": ["culture"]}, "serie": "nouvelles"},
+  {"question": "Idée de sortie pas chère depuis Annecy, moins de 45 min de train.", "attendu": {"origine": "Annecy", "duree_max_min": 45}, "serie": "nouvelles"},
+  {"question": "depuis grenoble, rando facile, 1h de train max, 15 min de marche max", "attendu": {"origine": "Grenoble", "duree_max_min": 60, "marche_max_min": 15, "themes": ["randonnee"], "difficulte": "facile"}, "serie": "nouvelles"}
+]
