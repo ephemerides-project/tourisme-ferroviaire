@@ -64,6 +64,17 @@ def test_correspondance_estimee(conn):
 
 
 # --- Explorer -------------------------------------------------------------------
+def test_trace_direct_et_avec_correspondance(client):
+    """Le tracé renvoyé à la carte : une liaison en direct, deux tronçons bout à bout sinon."""
+    corps = client.get("/destinations", params={"origine": "Voiron", "theme": "patrimoine"}).json()
+    par_gare = {d["gare"]["id"]: d["trajet"] for d in corps["destinations"]}
+    voiron, grenoble, chambery = [45.3643, 5.5935], [45.1915, 5.7145], [45.571, 5.9195]
+    assert par_gare[GRENOBLE]["trace"] == [voiron, grenoble]
+    via_grenoble = par_gare[CHAMBERY]["trace"]
+    assert via_grenoble[0] == voiron and via_grenoble[-1] == chambery
+    assert via_grenoble.count(grenoble) == 2  # fin du premier tronçon, début du second
+
+
 def test_recherche_de_gare_sans_accent(client):
     gares = client.get("/gares", params={"q": "chambery"}).json()
     assert [g["nom"] for g in gares] == ["Chambéry-Challes-les-Eaux"]

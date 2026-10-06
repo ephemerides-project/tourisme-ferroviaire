@@ -87,6 +87,18 @@ def test_liaisons(gares, tables_gtfs):
     assert (liaisons["origine_id"] != liaisons["destination_id"]).all()
 
 
+def test_trace_par_les_arrets_intermediaires(gares, tables_gtfs):
+    """Le tracé Grenoble -> Clelles passe par Vif et Monestier, dans l'ordre du train."""
+    correspondance, _ = gtfs.rattacher_arrets(tables_gtfs["stops"], gares)
+    liaisons = gtfs.calculer_liaisons(tables_gtfs, correspondance, types_route=(2,))
+    trace = liaison(liaisons, GRENOBLE, CLELLES)["trace"]
+    assert trace == [[45.1915, 5.7145], [45.056, 5.67], [44.917, 5.635], [44.826, 5.624]]
+    # Sens inverse : mêmes points, ordre inversé.
+    assert liaison(liaisons, CLELLES, GRENOBLE)["trace"] == trace[::-1]
+    # Chaque liaison a un tracé d'au moins deux points.
+    assert all(len(t) >= 2 for t in liaisons["trace"])
+
+
 def test_liaisons_avec_les_cars(gares, tables_gtfs):
     """En incluant les cars (type 3), le car Grenoble -> Vif en 40 min entre dans la médiane."""
     correspondance, _ = gtfs.rattacher_arrets(tables_gtfs["stops"], gares)
@@ -137,3 +149,8 @@ def test_enrichissement_par_le_texte():
     assert enrichir_par_texte(["nature"], "Lac des Alpages", "Balade en montagne adaptée aux enfants") == ["famille", "montagne", "nature"]
     assert enrichir_par_texte([], "Sentier botanique", None) == ["randonnee"]
     assert enrichir_par_texte(["hebergement"], "Hôtel de la Montagne", "Idéal en famille") == ["hebergement"]
+    # « Practice » (activité encadrée) : loisir par défaut, et gastronomie quand le nom parle de vin
+    activite = classer(["schema:Product", "schema:Practice"])
+    assert activite == ["sport_loisirs"]
+    assert enrichir_par_texte(activite, "Week end dégustation : les fondamentaux", None) == ["gastronomie", "sport_loisirs"]
+    assert enrichir_par_texte(activite, "Canoë Kayak", None) == ["sport_loisirs"]

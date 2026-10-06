@@ -92,7 +92,32 @@ def rechercher(
             }
         )
     destinations.sort(key=lambda d: (-d["score"], d["trajet"]["duree_min"]))
-    return destinations[:limite], diagnostic
+    retenues = destinations[:limite]
+    _ajouter_traces(conn, origine_id, retenues)
+    return retenues, diagnostic
+
+
+def _ajouter_traces(conn: psycopg.Connection, origine_id: str, destinations: list[dict]) -> None:
+    """Ajoute à chaque destination le tracé à dessiner sur la carte : [[lat, lon], ...].
+
+    Trajet direct : le tracé de la liaison. Avec correspondance : les deux tronçons bout à bout.
+    """
+    if not destinations:
+        return
+    lignes = conn.execute(
+        """
+        SELECT a.destination_id, l1.trace AS premier, l2.trace AS second
+        FROM accessibilite a
+        LEFT JOIN liaison l1 ON l1.origine_id = a.origine_id
+                            AND l1.destination_id = COALESCE(a.via_id, a.destination_id)
+        LEFT JOIN liaison l2 ON l2.origine_id = a.via_id AND l2.destination_id = a.destination_id
+        WHERE a.origine_id = %s AND a.destination_id = ANY(%s)
+        """,
+        (origine_id, [d["gare"]["id"] for d in destinations]),
+    ).fetchall()
+    traces = {ligne["destination_id"]: (ligne["premier"] or []) + (ligne["second"] or []) for ligne in lignes}
+    for destination in destinations:
+        destination["trajet"]["trace"] = traces.get(destination["gare"]["id"]) or None
 
 
 def _contrainte_bloquante(conn: psycopg.Connection, origine_id: str, gares: list[str], themes: list[str]) -> dict:

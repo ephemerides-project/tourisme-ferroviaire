@@ -8,6 +8,7 @@ import math
 
 import pandas as pd
 import psycopg
+from psycopg.types.json import Jsonb
 
 from app import config
 
@@ -16,7 +17,7 @@ TABLES = ["import_journal", "accessibilite", "liaison", "gare_poi", "poi", "gare
 
 def _valeur(v):
     """Convertit les valeurs « vides » de pandas (NaN, NaT, NA, chaîne vide) en NULL."""
-    if v is None or isinstance(v, (list, tuple)):
+    if v is None or isinstance(v, (list, tuple, Jsonb)):
         return v
     if isinstance(v, float) and math.isnan(v):
         return None
@@ -54,8 +55,16 @@ def charger(conn: psycopg.Connection, gares: pd.DataFrame, liaisons: pd.DataFram
         col_poi = ["id", "nom", "themes", "types_source", "lat", "lon", "commune", "code_postal", "description", "source", "maj"]
         bilan["poi"] = _copier(cur, "poi", col_poi, poi[col_poi].itertuples(index=False))
 
-        col_liaison = ["origine_id", "destination_id", "duree_min", "trajets_jour"]
-        bilan["liaison"] = _copier(cur, "liaison", col_liaison, liaisons[col_liaison].itertuples(index=False))
+        col_liaison = ["origine_id", "destination_id", "duree_min", "trajets_jour", "trace"]
+        bilan["liaison"] = _copier(
+            cur,
+            "liaison",
+            col_liaison,
+            (
+                (l.origine_id, l.destination_id, l.duree_min, l.trajets_jour, Jsonb(l.trace) if l.trace else None)
+                for l in liaisons[col_liaison].itertuples(index=False)
+            ),
+        )
 
         bilan.update(enrichir(cur))
     return bilan

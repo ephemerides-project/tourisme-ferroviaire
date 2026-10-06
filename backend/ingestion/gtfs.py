@@ -125,7 +125,7 @@ def _jours_par_service(tables: dict[str, pd.DataFrame]) -> tuple[pd.Series, int]
 def calculer_liaisons(
     tables: dict[str, pd.DataFrame], arret_vers_gare: dict[str, str], types_route: tuple[int, ...] = (2,)
 ) -> pd.DataFrame:
-    """Liaisons directes entre gares : colonnes origine_id, destination_id, duree_min, trajets_jour."""
+    """Liaisons directes entre gares : colonnes origine_id, destination_id, duree_min, trajets_jour, trace."""
     trips = tables["trips"]
     if "routes" in tables and "route_type" in tables["routes"].columns:
         routes_ok = tables["routes"].loc[
@@ -149,7 +149,7 @@ def calculer_liaisons(
     couples["duree"] = couples["arrivee_d"] - couples["depart_o"]
     couples = couples[couples["duree"] > 0]
     if couples.empty:
-        return pd.DataFrame(columns=["origine_id", "destination_id", "duree_min", "trajets_jour"])
+        return pd.DataFrame(columns=["origine_id", "destination_id", "duree_min", "trajets_jour", "trace"])
 
     # 3. Fréquence : nombre de jours où chaque train circule, rapporté à la période couverte.
     jours_service, nb_jours = _jours_par_service(tables)
@@ -165,4 +165,44 @@ def calculer_liaisons(
     )
     liaisons["duree_min"] = liaisons["duree_min"].round().astype(int)
     liaisons["trajets_jour"] = (liaisons["jours"] / nb_jours).round(2)
-    return liaisons[["origine_id", "destination_id", "duree_min", "trajets_jour"]]
+
+    # 5. Tracé : la suite des arrêts du train le plus fréquent sur chaque liaison.
+    traces = _tracer(tables, couples)
+    liaisons["trace"] = [traces.get(couple) for couple in zip(liaisons["origine_id"], liaisons["destination_id"])]
+    return liaisons[["origine_id", "destination_id", "duree_min", "trajets_jour", "trace"]]
+
+
+def _tracer(tables: dict[str, pd.DataFrame], couples: pd.DataFrame) -> dict[tuple[str, str], list[list[float]]]:
+    """Tracé de chaque liaison : les positions des arrêts successifs d'un train représentatif.
+
+    Ce n'est pas la géométrie exacte des voies, mais le train passe réellement par ces points,
+    y compris les arrêts situés hors de la région. Entre deux arrêts, le trait est une ligne droite.
+    """
+    # Un train par liaison : celui qui circule le plus souvent, puis le plus rapide.
+    representatifs = couples.sort_values(["jours", "duree"], ascending=[False, True]).drop_duplicates(
+        ["gare_id_o", "gare_id_d"]
+    )
+
+    # Tous les arrêts de ces trains, dans l'ordre, avec leur position.
+    arrets = tables["stops"][["stop_id", "stop_lat", "stop_lon"]].copy()
+    arrets["lat"] = pd.to_numeric(arrets["stop_lat"], errors="coerce")
+    arrets["lon"] = pd.to_numeric(arrets["stop_lon"], errors="coerce")
+    passages = tables["stop_times"][["trip_id", "stop_id", "stop_sequence"]]
+    passages = passages[passages["trip_id"].isin(representatifs["trip_id"])].merge(arrets, on="stop_id")
+    passages = passages.assign(ordre=pd.to_numeric(passages["stop_sequence"], errors="coerce")).dropna(
+        subset=["ordre", "lat", "lon"]
+    )
+    par_train = {
+        trip_id: (groupe["ordre"].to_numpy(), groupe[["lat", "lon"]].to_numpy().round(5))
+        for trip_id, groupe in passages.sort_values("ordre").groupby("trip_id")
+    }
+
+    traces: dict[tuple[str, str], list[list[float]]] = {}
+    for ligne in representatifs.itertuples():
+        if ligne.trip_id not in par_train:
+            continue
+        ordres, positions = par_train[ligne.trip_id]
+        points = positions[(ordres >= ligne.ordre_o) & (ordres <= ligne.ordre_d)].tolist()
+        if len(points) >= 2:
+            traces[(ligne.gare_id_o, ligne.gare_id_d)] = points
+    return traces

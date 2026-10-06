@@ -63,8 +63,11 @@ CREATE TABLE IF NOT EXISTS liaison (
     destination_id  TEXT NOT NULL REFERENCES gare (id) ON DELETE CASCADE,
     duree_min       INTEGER NOT NULL,   -- durée médiane des trajets directs, en minutes
     trajets_jour    REAL NOT NULL,      -- nombre moyen de trajets directs par jour
+    trace           JSONB,              -- tracé [[lat, lon], ...] passant par les arrêts du train le plus fréquent
     PRIMARY KEY (origine_id, destination_id)
 );
+-- Pour les bases créées avant l'ajout du tracé.
+ALTER TABLE liaison ADD COLUMN IF NOT EXISTS trace JSONB;
 
 -- Accessibilité d'une gare depuis une autre : liaisons directes + trajets à une correspondance.
 -- Pour une correspondance, la durée est une ESTIMATION (somme des deux tronçons + marge fixe),

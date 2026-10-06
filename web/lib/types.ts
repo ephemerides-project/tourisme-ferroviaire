@@ -37,6 +37,7 @@ export type Trajet = {
   via: string | null;
   trajets_jour: number;
   duree_estimee: boolean;
+  trace?: [number, number][] | null; // points [lat, lon] du trajet, par les arrêts du train
 };
 
 export type DetailScore = {

@@ -649,6 +649,11 @@ input[type="search"] {
   display: none;
 }
 
+/* Le nombre ne doit pas intercepter le clic destiné au marqueur qu'il recouvre. */
+.leaflet-tooltip.carte-numero {
+  pointer-events: none;
+}
+
 .leaflet-tile-pane {
   filter: saturate(0.55);
 }

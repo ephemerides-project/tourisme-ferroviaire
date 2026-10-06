@@ -24,6 +24,8 @@ docker compose up -d --build
 docker compose run --rm api python -m ingestion.pipeline --exemple
 # ... puis les vraies données (télécharge environ 50 Mo, à faire avant toute démonstration)
 docker compose run --rm api python -m ingestion.pipeline --telecharger
+# ... et, facultatif, les voies ferrées d'OpenStreetMap, pour que les tracés suivent les rails (à faire une fois)
+docker compose run --rm api python -m ingestion.pipeline --voies
 
 # 3. Tests
 docker compose run --rm api pytest
@@ -158,5 +160,7 @@ Toutes sont regroupées dans `backend/app/config.py` et `backend/app/metier/scor
 - **L'interface n'a pas de tests automatiques** : elle se vérifie à la main dans un navigateur.
 - **La difficulté des randonnées n'existe pas** dans l'export CSV de DATAtourisme : le critère est compris, signalé à l'utilisateur, et non appliqué.
 - **Le thème « montagne » repose sur peu d'indices** : à vérifier sur les données réelles.
-- **Pas de tracé des lignes ferroviaires** : la carte relie départ et destinations par des traits schématiques.
+- **Le tracé des trajets suit les voies seulement si elles ont été téléchargées** (`python -m ingestion.pipeline --voies`, une fois). C'est alors un plus court chemin entre les arrêts du train dans le réseau d'OpenStreetMap, pas la voie exacte empruntée. Sinon il relie les arrêts par des segments droits. Cette étape n'a été vérifiée que sur un réseau inventé.
+- **Le calque « Voies ferrées »** (OpenRailwayMap, à cocher sur la carte) utilise un serveur de tuiles réservé à un usage non commercial et à faible volume.
+- **Après une mise à jour du code touchant `db/schema.sql` ou l'ingestion**, relancer `docker compose run --rm api python -m ingestion.pipeline` : sans cela la base garde l'ancienne structure.
 - **Les règles d'extraction ont été écrites à partir des requêtes du sujet** : leur score sur ces mêmes requêtes ne prouve rien. Ajoutez des requêtes nouvelles dans `evaluation/requetes.json`.
