@@ -15,6 +15,7 @@ import pandas as pd
 
 from app import config
 from app.texte import cle
+from app.services import TYPES_DATATOURISME
 from app.themes import classer, enrichir_par_texte, est_classe, nom_local
 
 COLONNES = ["id", "nom", "themes", "types_source", "lat", "lon", "commune", "code_postal", "description", "source", "maj"]
@@ -117,7 +118,8 @@ def normaliser_poi(brut: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
 
     # Types à examiner : ceux des POI restés SANS AUCUN thème (un POI déjà classé n'a pas besoin de plus).
     non_classes = Counter(
-        t for types, themes in zip(poi["types_source"], poi["themes"]) if not themes for t in types if not est_classe(t)
+        t for types, themes in zip(poi["types_source"], poi["themes"]) if not themes for t in types
+        if not est_classe(t) and t.lower() not in TYPES_DATATOURISME  # les équipements de gare sont déjà exploités
     )
     bilan["retenus"] = len(poi)
     bilan["sans_theme"] = int((poi["themes"].str.len() == 0).sum())

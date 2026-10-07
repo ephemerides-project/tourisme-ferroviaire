@@ -63,7 +63,8 @@ Trois sources ouvertes alimentent la base, toutes téléchargeables sans compte 
 | [Réseau SNCF TGV, Intercités et TER](https://transport.data.gouv.fr/datasets/horaires-sncf) | Horaires théoriques, d'où la durée et la fréquence entre deux gares | GTFS, 5,4 Mo | ODbL et conditions particulières |
 | [DATAtourisme, export régional](https://www.data.gouv.fr/datasets/datatourisme-la-base-nationale-des-donnees-publiques-dinformation-touristique-en-open-data) | Points d'intérêt : nom, types, position, commune, description | CSV, 44 Mo, mis à jour chaque jour | Licence Ouverte 2.0 |
 | OpenStreetMap | Fond de carte | Tuiles | ODbL |
-| OpenStreetMap, via Overpass | Géométrie des voies ferrées, pour tracer les trajets (étape facultative) | JSON | ODbL |
+| SNCF Open Data, six jeux de données sur les gares | Services : assistance PMR, équipements d'accessibilité, ascenseurs, vélo, points de vente, Wi-Fi | JSON | Licences à relever sur les fiches |
+| SNCF Open Data, formes des lignes du Réseau Ferré National | Géométrie des lignes, pour tracer les trajets le long des rails | GeoJSON | Licence à relever sur la fiche du jeu de données |
 
 Le GTFS publié est un flux national unique : il ne contient pas de fichier propre aux TER, d'où le filtrage sur les gares de la région. Sa période de validité court du 2 octobre 2026 au 31 mars 2027.
 

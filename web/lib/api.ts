@@ -1,6 +1,6 @@
 // Appels à l'API. Toute la logique (recherche, classement, IA) est côté serveur.
 
-import type { Criteres, Gare, Poi, Reponse, Theme } from "./types";
+import type { Criteres, Gare, Poi, Reponse, Service, Theme } from "./types";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -21,6 +21,8 @@ async function appeler<T>(chemin: string, options?: RequestInit): Promise<T> {
 export const listerGares = () => appeler<Gare[]>("/gares");
 
 export const listerThemes = () => appeler<Theme[]>("/themes");
+
+export const servicesDeLaGare = (gareId: string) => appeler<Service[]>(`/gares/${encodeURIComponent(gareId)}/services`);
 
 export function poiDeLaGare(gareId: string, themes: string[] = []): Promise<Poi[]> {
   const parametres = new URLSearchParams();

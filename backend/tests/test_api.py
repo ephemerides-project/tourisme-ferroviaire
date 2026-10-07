@@ -13,6 +13,7 @@ from app.main import app
 pytestmark = [pytest.mark.base, pytest.mark.usefixtures("base_chargee", "sans_llm")]
 
 GRENOBLE, VIF, VOIRON, CHAMBERY, ANNECY, MONESTIER = "87747006", "87747139", "87747337", "87741009", "87746008", "87747154"
+RIVES = "87747345"
 QUESTION_SUJET = (
     "Je cherche une sortie nature à moins de 1h30 de Grenoble, avec une randonnée facile "
     "et moins de 20 minutes de marche depuis la gare."
@@ -38,8 +39,8 @@ def test_volumes_charges(client, base_chargee):
         "gares_desservies": 13,
         "liaisons_directes": 66,
         "trajets_avec_correspondance": 90,
-        "points_interet": 28,
-        "rattachements_gare_poi": 27,  # 28 POI, dont un à 3,2 km de toute gare
+        "points_interet": 31,
+        "rattachements_gare_poi": 30,  # 31 POI, dont un à 3,2 km de toute gare
     }
     assert base_chargee["base"]["gare_uic"] == 14  # Grenoble porte deux codes UIC
 
@@ -73,6 +74,36 @@ def test_trace_direct_et_avec_correspondance(client):
     via_grenoble = par_gare[CHAMBERY]["trace"]
     assert via_grenoble[0] == voiron and via_grenoble[-1] == chambery
     assert via_grenoble.count(grenoble) == 2  # fin du premier tronçon, début du second
+
+
+def test_services_d_une_gare(client):
+    """Les services viennent de SNCF Open Data, du GTFS (cars) et des équipements DATAtourisme proches."""
+    grenoble = {s["code"]: s for s in client.get(f"/gares/{GRENOBLE}/services").json()}
+    assert list(grenoble) == ["pmr", "accessibilite", "ascenseur", "velo", "car", "billets", "wifi"]  # ordre d'affichage
+    assert grenoble["pmr"]["detail"] == "Avec ou sans réservation. Rendez-vous : Hall, devant l'accueil"
+    assert grenoble["accessibilite"]["detail"] == "Boucle à induction magnétique · Information sonore en gare et/ou sur les quais"
+    assert grenoble["ascenseur"]["detail"] == "2 ascenseurs, dont 1 en panne au dernier relevé"  # l'escalier mécanique ne compte pas
+    assert grenoble["velo"]["detail"] == "120 places sécurisées"  # le relevé le plus récent du fichier
+    assert grenoble["billets"]["detail"] == "Automate · Guichet"
+    assert grenoble["car"]["source"] == "GTFS SNCF"
+
+    chambery = {s["code"]: s["detail"] for s in client.get(f"/gares/{CHAMBERY}/services").json()}
+    assert chambery == {"pmr": "Sur réservation", "ascenseur": "1 ascenseur", "velo": "1 place sécurisée"}
+
+    vif = [s["code"] for s in client.get(f"/gares/{VIF}/services").json()]
+    assert vif == ["velo", "car", "billets"]  # vélo retrouvé par le nom de la gare, le code à trois lettres étant faux
+
+    rives = {s["code"]: s["detail"] for s in client.get(f"/gares/{RIVES}/services").json()}
+    assert rives == {"bus": "1 à moins de 400 m", "parking": "1 à moins de 400 m"}  # le second parking est à 700 m
+
+    assert client.get(f"/gares/{VOIRON}/services").json() == []  # zéro place de vélo : pas de service
+    assert client.get("/gares/inconnue/services").status_code == 404
+
+
+def test_services_joints_aux_destinations(client):
+    corps = client.get("/destinations", params={"origine": "Voiron", "theme": "patrimoine"}).json()
+    services = {d["gare"]["id"]: [s["code"] for s in d["gare"]["services"]] for d in corps["destinations"]}
+    assert services[GRENOBLE][:2] == ["pmr", "accessibilite"] and services[CHAMBERY] == ["pmr", "ascenseur", "velo"]
 
 
 def test_recherche_de_gare_sans_accent(client):

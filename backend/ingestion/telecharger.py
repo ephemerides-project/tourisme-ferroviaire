@@ -32,6 +32,53 @@ SOURCES: dict[str, tuple[str, str, str]] = {
 }
 
 
+# Sources facultatives : un échec de téléchargement n'empêche pas le chargement du reste.
+_SNCF = "https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets"
+SOURCES_FACULTATIVES: dict[str, tuple[str, str, str]] = {
+    "assistance-pmr.json": (
+        f"{_SNCF}/assistance-psh-pmr/exports/json",
+        "SNCF Open Data — assistance aux personnes handicapées et à mobilité réduite",
+        "voir la fiche du jeu de données",
+    ),
+    "equipements-accessibilite.json": (
+        f"{_SNCF}/equipements-accessibilite-en-gare/exports/json",
+        "SNCF Open Data — équipements d'accessibilité en gare",
+        "voir la fiche du jeu de données",
+    ),
+    "ascenseurs.json": (
+        f"{_SNCF}/etat-fonctionnement-elevatique-gare/exports/json",
+        "SNCF Open Data — état de fonctionnement des ascenseurs et escaliers mécaniques",
+        "voir la fiche du jeu de données",
+    ),
+    "velos-en-gare.json": (
+        f"{_SNCF}/stationnement-securise-velo-en-gare-au-30-06-24/exports/json",
+        "SNCF Open Data — stationnement vélo sécurisé en gare",
+        "voir la fiche du jeu de données",
+    ),
+    "points-de-vente.json": (
+        f"{_SNCF}/points-vente/exports/json",
+        "SNCF Open Data — points de vente",
+        "voir la fiche du jeu de données",
+    ),
+    "wifi-en-gare.json": (
+        f"{_SNCF}/gares-equipees-du-wifi/exports/json",
+        "SNCF Open Data — gares équipées du Wi-Fi",
+        "voir la fiche du jeu de données",
+    ),
+}
+
+
+def _telecharger_un(url: str, cible: Path) -> None:
+    partiel = cible.with_suffix(cible.suffix + ".partiel")
+    with requests.get(url, stream=True, timeout=120, headers={"User-Agent": "projet-etudiant-tourisme-ferroviaire"}) as r:
+        r.raise_for_status()
+        with partiel.open("wb") as f:
+            for bloc in r.iter_content(chunk_size=1 << 20):
+                f.write(bloc)
+    partiel.replace(cible)
+    print(f"    -> {cible.name} ({cible.stat().st_size / 1e6:.1f} Mo)")
+
+
 def telecharger(dossier: Path | None = None, forcer: bool = False) -> Path:
     dossier = dossier or config.DOSSIER_DONNEES / "brut"
     dossier.mkdir(parents=True, exist_ok=True)
@@ -41,14 +88,17 @@ def telecharger(dossier: Path | None = None, forcer: bool = False) -> Path:
             print(f"  déjà présent : {nom} ({cible.stat().st_size / 1e6:.1f} Mo)")
             continue
         print(f"  téléchargement : {description}")
-        partiel = cible.with_suffix(cible.suffix + ".partiel")
-        with requests.get(url, stream=True, timeout=120, headers={"User-Agent": "projet-etudiant-tourisme-ferroviaire"}) as r:
-            r.raise_for_status()
-            with partiel.open("wb") as f:
-                for bloc in r.iter_content(chunk_size=1 << 20):
-                    f.write(bloc)
-        partiel.replace(cible)
-        print(f"    -> {nom} ({cible.stat().st_size / 1e6:.1f} Mo)")
+        _telecharger_un(url, cible)
+    for nom, (url, description, _licence) in SOURCES_FACULTATIVES.items():
+        cible = dossier / nom
+        if cible.exists() and not forcer:
+            print(f"  déjà présent : {nom} ({cible.stat().st_size / 1e6:.1f} Mo)")
+            continue
+        print(f"  téléchargement : {description}")
+        try:
+            _telecharger_un(url, cible)
+        except requests.RequestException as erreur:
+            print(f"    échec, source ignorée : {erreur}")
     return dossier
 
 

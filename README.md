@@ -24,8 +24,9 @@ docker compose up -d --build
 docker compose run --rm api python -m ingestion.pipeline --exemple
 # ... puis les vraies données (télécharge environ 50 Mo, à faire avant toute démonstration)
 docker compose run --rm api python -m ingestion.pipeline --telecharger
-# ... et, facultatif, les voies ferrées d'OpenStreetMap, pour que les tracés suivent les rails (à faire une fois)
-docker compose run --rm api python -m ingestion.pipeline --voies
+# ... et, une fois, le tracé officiel des lignes (SNCF Open Data), pour que les trajets suivent les rails
+docker compose run --rm api python -m ingestion.voies       # un seul fichier GeoJSON
+docker compose run --rm api python -m ingestion.pipeline    # recharge la base en utilisant ces voies
 
 # 3. Tests
 docker compose run --rm api pytest
@@ -154,13 +155,14 @@ Toutes sont regroupées dans `backend/app/config.py` et `backend/app/metier/scor
 
 - **L'ingestion a tourné sur les données réelles le 5 octobre 2026** (329 gares, 5 816 liaisons directes, 58 362 points d'intérêt), sans correction des lecteurs.
   Si un export change de format, les lecteurs retrouvent les colonnes par mots-clés ; sinon, ajuster `_champ(...)` dans `gares_sncf.py` ou `EN_TETES` dans `poi_datatourisme.py`.
+- **Les services en gare dépendent de ce que publient les sources** : assistance PMR, équipements d'accessibilité, ascenseurs, vélo, points de vente et Wi-Fi viennent de SNCF Open Data ; les cars du GTFS ; parking, taxis et arrêts de bus des équipements DATAtourisme situés à moins de 400 m, donc incomplets. Aucune source chargée ne décrit les tramways.
 - **Les événements ne sont pas filtrés par date** : ils sont écartés des recherches sans thème, et signalés quand ils sont demandés.
 - **Les fichiers Docker et les requêtes PostGIS ont été validés sur la machine d'un membre du groupe**, pas dans une intégration continue.
 - **Le chemin LLM a été testé avec un serveur simulé**, pas avec un vrai modèle.
 - **L'interface n'a pas de tests automatiques** : elle se vérifie à la main dans un navigateur.
 - **La difficulté des randonnées n'existe pas** dans l'export CSV de DATAtourisme : le critère est compris, signalé à l'utilisateur, et non appliqué.
 - **Le thème « montagne » repose sur peu d'indices** : à vérifier sur les données réelles.
-- **Le tracé des trajets suit les voies seulement si elles ont été téléchargées** (`python -m ingestion.pipeline --voies`, une fois). C'est alors un plus court chemin entre les arrêts du train dans le réseau d'OpenStreetMap, pas la voie exacte empruntée. Sinon il relie les arrêts par des segments droits. Cette étape n'a été vérifiée que sur un réseau inventé.
+- **Le tracé des trajets suit les voies seulement si elles ont été téléchargées** (`python -m ingestion.voies`, une fois, puis le pipeline). C'est alors un plus court chemin entre les arrêts du train le long des lignes du Réseau Ferré National (fichier SNCF Open Data), pas la voie exacte empruntée. Sinon il relie les arrêts par des segments droits. Cette étape n'a été vérifiée que sur un réseau inventé.
 - **Le calque « Voies ferrées »** (OpenRailwayMap, à cocher sur la carte) utilise un serveur de tuiles réservé à un usage non commercial et à faible volume.
 - **Après une mise à jour du code touchant `db/schema.sql` ou l'ingestion**, relancer `docker compose run --rm api python -m ingestion.pipeline` : sans cela la base garde l'ancienne structure.
 - **Les règles d'extraction ont été écrites à partir des requêtes du sujet** : leur score sur ces mêmes requêtes ne prouve rien. Ajoutez des requêtes nouvelles dans `evaluation/requetes.json`.

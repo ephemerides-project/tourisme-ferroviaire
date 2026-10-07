@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import psycopg
 
+from app.metier import gares as metier_gares
 from app.metier import scoring
 from app.themes import THEMES_ACTIVITE
 
@@ -94,6 +95,9 @@ def rechercher(
     destinations.sort(key=lambda d: (-d["score"], d["trajet"]["duree_min"]))
     retenues = destinations[:limite]
     _ajouter_traces(conn, origine_id, retenues)
+    services = metier_gares.services_des_gares(conn, [d["gare"]["id"] for d in retenues])
+    for destination in retenues:
+        destination["gare"]["services"] = services[destination["gare"]["id"]]
     return retenues, diagnostic
 
 

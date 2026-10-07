@@ -580,6 +580,78 @@ input[type="search"] {
   font-size: 0.875rem;
 }
 
+/* Pastilles : une rangée de pictogrammes (services de la gare, activités autour). */
+.pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+}
+
+.pastilles__titre {
+  flex-basis: 100%;
+  color: var(--encre-douce);
+  font-size: 0.9375rem;
+}
+
+.pastilles ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pastilles li {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--encre);
+  border-radius: 0.5rem;
+  color: #ffffff;
+}
+
+.pastilles--activites li {
+  background: var(--marche);
+}
+
+.itin .pastilles {
+  margin: 0.5rem 0 0.6rem;
+}
+
+.services {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+}
+
+.services li {
+  display: grid;
+}
+
+.services__nom {
+  font-weight: 600;
+}
+
+.services__detail {
+  color: var(--encre-douce);
+}
+
+/* Texte lu par les lecteurs d'écran, invisible à l'écran. */
+.lecteur-ecran {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .filtres {
   display: flex;
   flex-wrap: wrap;

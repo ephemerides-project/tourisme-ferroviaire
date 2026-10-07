@@ -57,6 +57,15 @@ CREATE TABLE IF NOT EXISTS gare_poi (
 );
 CREATE INDEX IF NOT EXISTS gare_poi_poi_idx ON gare_poi (poi_id);
 
+-- Services et accès d'une gare : assistance PMR, vélo, cars, équipements proches (voir app/services.py).
+CREATE TABLE IF NOT EXISTS gare_service (
+    gare_id  TEXT NOT NULL REFERENCES gare (id) ON DELETE CASCADE,
+    code     TEXT NOT NULL,     -- pmr, velo, car, bus, parking...
+    detail   TEXT,              -- précision affichée : « 40 places sécurisées »
+    source   TEXT NOT NULL,
+    PRIMARY KEY (gare_id, code)
+);
+
 -- Liaisons directes entre deux gares, calculées à partir des horaires théoriques GTFS.
 CREATE TABLE IF NOT EXISTS liaison (
     origine_id      TEXT NOT NULL REFERENCES gare (id) ON DELETE CASCADE,

@@ -1,5 +1,13 @@
 // Formes des données échangées avec l'API (voir backend/app/main.py).
 
+// Un service ou un accès de la gare : assistance PMR, vélo, cars, parking proche...
+export type Service = {
+  code: string;
+  libelle: string;
+  detail: string | null;
+  source: string;
+};
+
 export type Gare = {
   id: string;
   nom: string;
@@ -8,6 +16,7 @@ export type Gare = {
   departement?: string | null;
   desservie?: boolean;
   nb_poi?: number;
+  services?: Service[]; // joint aux destinations recommandées
 };
 
 export type Poi = {

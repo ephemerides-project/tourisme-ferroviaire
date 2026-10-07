@@ -1,0 +1,44 @@
+[
+ {
+  "gareid": "x",
+  "id": "1",
+  "libelle": "ASC.PMR 1 Voie A",
+  "position_geographique": "45.1916, 5.7146",
+  "etat_de_fonctionnement": "OK"
+ },
+ {
+  "gareid": "x",
+  "id": "2",
+  "libelle": "ASC.PMR 2 Voie B",
+  "position_geographique": "45.1914, 5.7144",
+  "etat_de_fonctionnement": "KO"
+ },
+ {
+  "gareid": "x",
+  "id": "3",
+  "libelle": "ESC.MEC 3 Hall",
+  "position_geographique": "45.1915, 5.7145",
+  "etat_de_fonctionnement": "OK"
+ },
+ {
+  "gareid": "y",
+  "id": "4",
+  "libelle": "ASC.PMR 4 Parvis",
+  "position_geographique": "45.5712, 5.9196",
+  "etat_de_fonctionnement": "OK"
+ },
+ {
+  "gareid": "z",
+  "id": "5",
+  "libelle": "ASC.PMR 5",
+  "position_geographique": "48.8830136, 2.2331204",
+  "etat_de_fonctionnement": "OK"
+ },
+ {
+  "gareid": "z",
+  "id": "6",
+  "libelle": "ASC.PMR 6",
+  "position_geographique": null,
+  "etat_de_fonctionnement": "OK"
+ }
+]

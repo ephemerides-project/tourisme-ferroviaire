@@ -1,0 +1,25 @@
+[
+ {
+  "id_gare": "a",
+  "nom": "Grenoble",
+  "typepriseencharge": "RESERVE ET SPONTANE",
+  "typetarification": "GRATUIT",
+  "lieurendezvousgare": "Hall, devant l'accueil",
+  "code_uic": "87747006"
+ },
+ {
+  "id_gare": "b",
+  "nom": "Chambéry-Challes-les-Eaux",
+  "typepriseencharge": "RESERVE",
+  "typetarification": "GRATUIT",
+  "lieurendezvousgare": null,
+  "code_uic": "0087741009"
+ },
+ {
+  "id_gare": "c",
+  "nom": "Paris Austerlitz",
+  "typepriseencharge": "RESERVE ET SPONTANE",
+  "lieurendezvousgare": "Hall",
+  "code_uic": "87547026"
+ }
+]

@@ -2,10 +2,12 @@
 
 // Onglet « Explorer » : parcourir les gares, puis les points d'intérêt autour d'une gare.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import Pastilles from "@/components/Pastilles";
+import { servicesDeLaGare } from "@/lib/api";
 import { dureeLisible, libelleTheme } from "@/lib/format";
-import type { Gare, Poi } from "@/lib/types";
+import type { Gare, Poi, Service } from "@/lib/types";
 
 type Props = {
   gares: Gare[];
@@ -25,12 +27,32 @@ const sansAccents = (texte: string) =>
 export default function Explorer({ gares, gareActive, pois, surGare, surFermer, surPartirDIci }: Props) {
   const [filtre, setFiltre] = useState("");
   const [theme, setTheme] = useState<string | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+
+  // Les services de la gare affichée sont demandés à l'API à chaque changement de gare.
+  const gareId = gareActive?.id;
+  useEffect(() => {
+    setServices([]);
+    if (!gareId) return;
+    let abandonne = false; // évite d'afficher la réponse d'une gare quittée entre-temps
+    servicesDeLaGare(gareId)
+      .then((recus) => !abandonne && setServices(recus))
+      .catch(() => undefined); // sans services, la fiche reste utilisable
+    return () => {
+      abandonne = true;
+    };
+  }, [gareId]);
 
   const garesFiltrees = useMemo(
     () => gares.filter((g) => sansAccents(g.nom).includes(sansAccents(filtre.trim()))),
     [gares, filtre],
   );
   const themesPresents = useMemo(() => Array.from(new Set(pois.flatMap((p) => p.themes))).sort(), [pois]);
+  // Une pastille par thème présent autour de la gare, avec le nombre de lieux.
+  const activites = themesPresents.map((t) => {
+    const nombre = pois.filter((p) => p.themes.includes(t)).length;
+    return { code: t, libelle: libelleTheme(t), detail: `${nombre} lieu${nombre > 1 ? "x" : ""}` };
+  });
   const poisFiltres = theme && themesPresents.includes(theme) ? pois.filter((p) => p.themes.includes(theme)) : pois;
 
   if (gareActive) {
@@ -48,6 +70,19 @@ export default function Explorer({ gares, gareActive, pois, surGare, surFermer, 
         <button type="button" className="bouton bouton--secondaire" onClick={surPartirDIci}>
           Chercher une sortie depuis cette gare
         </button>
+
+        <Pastilles genre="services" titre={`${services.length} service${services.length > 1 ? "s" : ""}`} pastilles={services} />
+        {services.length > 0 && (
+          <ul className="services">
+            {services.map((service) => (
+              <li key={service.code}>
+                <span className="services__nom">{service.libelle}</span>
+                {service.detail && <span className="services__detail">{service.detail}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+        <Pastilles genre="activites" titre={`${activites.length} activité${activites.length > 1 ? "s" : ""}`} pastilles={activites} />
 
         {themesPresents.length > 1 && (
           <div className="filtres" role="group" aria-label="Filtrer par thème">

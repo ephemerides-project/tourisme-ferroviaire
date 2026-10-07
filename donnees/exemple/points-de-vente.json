@@ -1,0 +1,26 @@
+[
+ {
+  "gare_code_uic": "87747006",
+  "gare": "GRENOBLE",
+  "type_de_point_de_vente": "Poste de vente guichet",
+  "cb": "Oui"
+ },
+ {
+  "gare_code_uic": "87747006",
+  "gare": "GRENOBLE",
+  "type_de_point_de_vente": "Automates TER",
+  "cb": "Oui"
+ },
+ {
+  "gare_code_uic": "87747139",
+  "gare": "VIF",
+  "type_de_point_de_vente": "Automates TER",
+  "cb": "Oui"
+ },
+ {
+  "gare_code_uic": "87645168",
+  "gare": "MAURS",
+  "type_de_point_de_vente": "Poste de vente guichet",
+  "cb": "Oui"
+ }
+]

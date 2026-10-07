@@ -71,6 +71,13 @@ def gare(conn: Connexion, gare_id: str) -> dict:
     return _gare_ou_404(conn, gare_id)
 
 
+@app.get("/gares/{gare_id}/services", tags=["explorer"])
+def services_de_la_gare(conn: Connexion, gare_id: str) -> list[dict]:
+    """Services et accès de la gare : assistance PMR, vélo, cars, équipements proches."""
+    _gare_ou_404(conn, gare_id)
+    return metier_gares.services_des_gares(conn, [gare_id])[gare_id]
+
+
 @app.get("/gares/{gare_id}/poi", tags=["explorer"])
 def poi_de_la_gare(
     conn: Connexion,

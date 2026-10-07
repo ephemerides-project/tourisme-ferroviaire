@@ -73,9 +73,77 @@ def test_suivre_remplace_les_segments_droits(tmp_path):
     assert bilan == {"troncons": 3, "sur_les_voies": 2}
 
 
-def test_requete_couvre_les_gares_avec_une_marge():
-    gares = pd.DataFrame({"lat": [45.0, 46.0], "lon": [5.0, 6.0]})
-    assert "(44.8500,4.8500,46.1500,6.1500)" in voies.requete(gares)
+def test_zones_couvrent_les_gares_avec_une_marge():
+    gares = pd.DataFrame({"lat": [45.0, 46.2], "lon": [5.0, 6.0]})
+    decoupage = voies.zones(gares)
+    assert decoupage == [(44.85, 4.85, 45.85, 5.85), (44.85, 5.85, 45.85, 6.15), (45.85, 4.85, 46.35, 5.85), (45.85, 5.85, 46.35, 6.15)]
+    assert "(44.85,4.85,45.85,5.85)" in voies.requete(decoupage[0])
+
+
+class _Reponse:
+    def __init__(self, statut: int, contenu: dict):
+        self.status_code, self._contenu = statut, contenu
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise voies.requests.HTTPError(f"{self.status_code} Server Error")
+
+    def json(self):
+        return self._contenu
+
+
+def test_telechargement_par_zones_avec_reprise(tmp_path, monkeypatch):
+    """Un 504 puis une réponse abandonnée en route : on réessaie. Une voie vue dans deux zones : gardée une fois."""
+    gares = pd.DataFrame({"lat": [45.0, 45.1], "lon": [5.0, 6.0]})  # deux zones côte à côte
+    voie = _voie(7, [(1, 45.0, 5.8), (2, 45.0, 5.9)])
+    reponses = [
+        _Reponse(504, {}),
+        _Reponse(200, {"elements": [], "remark": "runtime error: Query timed out"}),
+        _Reponse(200, {"elements": [voie]}),
+        _Reponse(200, {"elements": [voie, _voie(8, [(2, 45.0, 5.9), (3, 45.0, 6.0)])]}),
+    ]
+    appels = []
+    monkeypatch.setattr(voies.requests, "post", lambda url, **_: (appels.append(url), reponses.pop(0))[1])
+    monkeypatch.setattr(voies.time, "sleep", lambda _secondes: None)
+
+    cible = voies.telecharger(gares, tmp_path / "voies-osm.json")
+    assert len(appels) == 4 and appels[0] != appels[1]  # le deuxième essai change de serveur
+    assert sorted(e["id"] for e in json.loads(cible.read_text())["elements"]) == [7, 8]
+    assert len(voies.lire(cible).positions) == 3
+
+    voies.telecharger(gares, cible)  # déjà présent : aucun nouvel appel
+    assert len(appels) == 4
+
+
+def test_zone_en_echec_puis_reprise(tmp_path, monkeypatch):
+    gares = pd.DataFrame({"lat": [45.0, 45.1], "lon": [5.0, 6.0]})
+    monkeypatch.setattr(voies.time, "sleep", lambda _secondes: None)
+    etat = {"en_panne": False, "appels": 0}
+
+    def post(url, **_):
+        etat["appels"] += 1
+        return _Reponse(504 if etat["en_panne"] else 200, {"elements": []})
+
+    monkeypatch.setattr(voies.requests, "post", post)
+    # première zone obtenue, puis panne générale sur la seconde
+    original = voies._telecharger_zone
+
+    def zone_puis_panne(zone):
+        resultat = original(zone)
+        etat["en_panne"] = True
+        return resultat
+
+    monkeypatch.setattr(voies, "_telecharger_zone", zone_puis_panne)
+    try:
+        voies.telecharger(gares, tmp_path / "voies-osm.json")
+        raise AssertionError("la seconde zone aurait dû échouer")
+    except RuntimeError as erreur:
+        assert "aucun serveur" in str(erreur)
+    assert not (tmp_path / "voies-osm.json").exists()
+
+    etat["en_panne"], etat["appels"] = False, 0
+    voies.telecharger(gares, tmp_path / "voies-osm.json")
+    assert etat["appels"] == 1  # seule la zone manquante est redemandée
 
 
 def test_pipeline_sans_puis_avec_fichier_de_voies(tmp_path):
@@ -97,3 +165,47 @@ def test_fichier_de_voies_illisible_ou_incomplet(tmp_path):
     (tmp_path / "voies-osm.json").write_text('{"elements": [], "remark": "runtime error: timed out"}', encoding="utf-8")
     traces, bilan = pipeline._suivre_les_voies(tmp_path, None, [[A, B]], False, messages.append)
     assert traces == [[A, B]] and bilan["sur_les_voies"] == 0 and any("timed out" in m for m in messages)
+
+
+# --- Lignes SNCF (GeoJSON) --------------------------------------------------------
+C = [45.1, 5.1]  # un arrêt au bout d'une ligne qui se branche sur la ligne A - B
+
+
+def _lignes_sncf(tmp_path):
+    """Trois lignes inventées, au format du fichier SNCF : A - B, une branche vers C, un raccourci déclassé."""
+    ligne_ab = {"type": "LineString", "coordinates": [[5.0 + i / 100, 45.0] for i in range(21)]}
+    # La branche commence à 55 m de la ligne A - B, sans partager de point avec elle, et arrive en deux morceaux.
+    branche = {"type": "MultiLineString", "coordinates": [[[5.1, 45.0005], [5.1, 45.05]], [[5.1, 45.05], [5.1, 45.1]]]}
+    raccourci = {"type": "LineString", "coordinates": [[5.0, 45.0], [5.1, 45.1]]}
+    formes = [
+        {"type": "Feature", "geometry": ligne_ab, "properties": {"code_ligne": "1", "mnemo": "EXPLOITE"}},
+        {"type": "Feature", "geometry": branche, "properties": {"code_ligne": "2", "mnemo": "EXPLOITE"}},
+        {"type": "Feature", "geometry": raccourci, "properties": {"code_ligne": "3", "mnemo": "DECLASSE NON VENDU"}},
+        {"type": "Feature", "geometry": None, "properties": {"code_ligne": "4"}},
+    ]
+    chemin = tmp_path / "lignes-sncf.geojson"
+    chemin.write_text(json.dumps({"type": "FeatureCollection", "features": formes}), encoding="utf-8")
+    return chemin
+
+
+def test_lignes_sncf_bifurcation_raccordee_et_ligne_fermee_ignoree(tmp_path):
+    reseau = voies.lire_lignes_sncf(_lignes_sncf(tmp_path))
+    troncon = reseau.troncon(A, C)
+    assert troncon[0] == A and troncon[-1] == C
+    assert any(abs(lat - 45.0) < 0.001 and abs(lon - 5.1) < 0.001 for lat, lon in troncon)  # passe par la bifurcation
+    assert len(troncon) >= 3  # donc pas par le raccourci déclassé, qui irait tout droit
+
+
+def test_lignes_sncf_limitees_a_la_zone_des_gares(tmp_path):
+    ici = pd.DataFrame({"lat": [45.0], "lon": [5.1]})
+    ailleurs = pd.DataFrame({"lat": [48.0], "lon": [2.0]})
+    assert len(voies.lire_lignes_sncf(_lignes_sncf(tmp_path), ici).positions) > 20
+    assert len(voies.lire_lignes_sncf(_lignes_sncf(tmp_path), ailleurs).positions) == 0
+
+
+def test_pipeline_prefere_les_lignes_sncf(tmp_path):
+    messages: list[str] = []
+    _lignes_sncf(tmp_path)
+    (tmp_path / "voies-osm.json").write_text('{"elements": []}', encoding="utf-8")
+    traces, bilan = pipeline._suivre_les_voies(tmp_path, None, [[A, C]], False, messages.append)
+    assert bilan["sur_les_voies"] == 1 and "lignes-sncf.geojson" in messages[-1]

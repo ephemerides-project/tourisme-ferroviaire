@@ -11,8 +11,9 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 from app import config
+from app.services import RAYON_SERVICE_M, TYPES_DATATOURISME
 
-TABLES = ["import_journal", "accessibilite", "liaison", "gare_poi", "poi", "gare_uic", "gare"]
+TABLES = ["import_journal", "accessibilite", "liaison", "gare_service", "gare_poi", "poi", "gare_uic", "gare"]
 
 
 def _valeur(v):
@@ -40,7 +41,9 @@ def appliquer_schema(conn: psycopg.Connection) -> None:
     conn.execute(config.SCHEMA_SQL.read_text(encoding="utf-8"))
 
 
-def charger(conn: psycopg.Connection, gares: pd.DataFrame, liaisons: pd.DataFrame, poi: pd.DataFrame) -> dict:
+def charger(
+    conn: psycopg.Connection, gares: pd.DataFrame, liaisons: pd.DataFrame, poi: pd.DataFrame, services: pd.DataFrame | None = None
+) -> dict:
     """Remplace tout le contenu de la base par les tables fournies (dans une seule transaction)."""
     bilan: dict = {}
     with conn.transaction(), conn.cursor() as cur:
@@ -66,6 +69,10 @@ def charger(conn: psycopg.Connection, gares: pd.DataFrame, liaisons: pd.DataFram
             ),
         )
 
+        if services is not None and len(services):
+            col_service = ["gare_id", "code", "detail", "source"]
+            _copier(cur, "gare_service", col_service, services[col_service].itertuples(index=False))
+
         bilan.update(enrichir(cur))
     return bilan
 
@@ -87,6 +94,25 @@ def enrichir(cur: psycopg.Cursor) -> dict:
         {"rayon": float(config.RAYON_POI_M), "detour": config.FACTEUR_DETOUR, "vitesse": config.VITESSE_MARCHE_M_MIN},
     )
     bilan["gare_poi"] = cur.rowcount
+
+    # 1 bis. Équipements proches d'une gare (parking, taxis, arrêt de bus...) : ce sont des points
+    # DATAtourisme sans thème touristique, mais utiles pour dire comment on accède à la gare.
+    cur.execute(
+        """
+        INSERT INTO gare_service (gare_id, code, detail, source)
+        SELECT gp.gare_id, t.code, count(DISTINCT p.id) || ' à moins de ' || %(rayon)s || ' m', 'DATAtourisme'
+        FROM gare_poi gp
+        JOIN poi p ON p.id = gp.poi_id
+        JOIN unnest(%(types)s::text[], %(codes)s::text[]) AS t(type, code)
+          ON t.type = ANY (SELECT lower(type_source) FROM unnest(p.types_source) AS type_source)
+        WHERE gp.distance_m <= %(rayon)s
+        GROUP BY gp.gare_id, t.code
+        ON CONFLICT DO NOTHING
+        """,
+        {"rayon": RAYON_SERVICE_M, "types": list(TYPES_DATATOURISME), "codes": list(TYPES_DATATOURISME.values())},
+    )
+    cur.execute("SELECT count(*) FROM gare_service")
+    bilan["gare_service"] = cur.fetchone()[0]
 
     # 2. Une gare est « desservie » si elle apparaît dans au moins une liaison.
     cur.execute(

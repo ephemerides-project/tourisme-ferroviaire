@@ -1,6 +1,7 @@
 // Une destination recommandée, dessinée comme un plan de ligne :
 // gare de départ -> trajet en train -> gare d'arrivée -> points d'intérêt à pied.
 
+import Pastilles from "@/components/Pastilles";
 import { dureeLisible, frequenceLisible, libelleTheme } from "@/lib/format";
 import type { Destination, Gare } from "@/lib/types";
 
@@ -43,6 +44,8 @@ export default function Itineraire({ rang, destination, origine, active, surSele
           <li className="trace__arret">{gare.nom}</li>
         </ol>
       )}
+
+      {gare.services && <Pastilles genre="services" titre="À la gare" pastilles={gare.services} />}
 
       <ol className="trace trace--marche">
         {pois.map((poi) => (

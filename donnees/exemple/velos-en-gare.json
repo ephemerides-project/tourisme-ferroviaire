@@ -1,0 +1,47 @@
+[
+ {
+  "code_gare": "GRE",
+  "nom_de_la_gare": "Grenoble",
+  "region": "AURA",
+  "gare_lom_hors_lom": "LOM",
+  "objectif_decret_lom": "100",
+  "nombre_places_au_06_24": 80,
+  "nombre_places_au_12_24": 120
+ },
+ {
+  "code_gare": "CHA",
+  "nom_de_la_gare": "Chambéry-Challes-les-Eaux",
+  "region": "AURA",
+  "gare_lom_hors_lom": "LOM",
+  "objectif_decret_lom": "40",
+  "nombre_places_au_06_24": 1,
+  "nombre_places_au_12_24": 1
+ },
+ {
+  "code_gare": "ZZZ",
+  "nom_de_la_gare": "Vif",
+  "region": "AURA",
+  "gare_lom_hors_lom": "Hors LOM",
+  "objectif_decret_lom": "N/C",
+  "nombre_places_au_06_24": 0,
+  "nombre_places_au_12_24": 12
+ },
+ {
+  "code_gare": "VOI",
+  "nom_de_la_gare": "Voiron",
+  "region": "AURA",
+  "gare_lom_hors_lom": "LOM",
+  "objectif_decret_lom": "20",
+  "nombre_places_au_06_24": 0,
+  "nombre_places_au_12_24": 0
+ },
+ {
+  "code_gare": "COG",
+  "nom_de_la_gare": "Cognac",
+  "region": "NA",
+  "gare_lom_hors_lom": "LOM",
+  "objectif_decret_lom": "10",
+  "nombre_places_au_06_24": 30,
+  "nombre_places_au_12_24": 30
+ }
+]

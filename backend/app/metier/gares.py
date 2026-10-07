@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import psycopg
 
+from app.services import SERVICES
 from app.texte import normaliser
 
 
@@ -27,6 +28,20 @@ def trouver_gare(conn: psycopg.Connection, gare_id: str) -> dict | None:
         "SELECT id, nom, trigramme, code_insee, departement, segment_drg, lat, lon, desservie FROM gare WHERE id = %s",
         (gare_id,),
     ).fetchone()
+
+
+def services_des_gares(conn: psycopg.Connection, gare_ids: list[str]) -> dict[str, list[dict]]:
+    """Services et accès de chaque gare demandée, dans l'ordre d'affichage de `SERVICES`."""
+    lignes = conn.execute(
+        "SELECT gare_id, code, detail, source FROM gare_service WHERE gare_id = ANY(%s)", (gare_ids,)
+    ).fetchall()
+    ordre = list(SERVICES)
+    par_gare: dict[str, list[dict]] = {gare_id: [] for gare_id in gare_ids}
+    for ligne in sorted((l for l in lignes if l["code"] in SERVICES), key=lambda l: ordre.index(l["code"])):
+        par_gare[ligne["gare_id"]].append(
+            {"code": ligne["code"], "libelle": SERVICES[ligne["code"]], "detail": ligne["detail"], "source": ligne["source"]}
+        )
+    return par_gare
 
 
 def resoudre_gare(conn: psycopg.Connection, texte: str) -> dict | None:

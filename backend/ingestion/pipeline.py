@@ -6,7 +6,7 @@ Usages (depuis le dossier backend/) :
     python -m ingestion.pipeline --exemple        # jeu d'essai fictif fourni, hors ligne
     python -m ingestion.pipeline --telecharger    # télécharge les vraies données puis les charge
     python -m ingestion.pipeline                  # recharge les fichiers déjà présents dans donnees/brut/
-    python -m ingestion.pipeline --voies          # idem, en téléchargeant d'abord les voies ferrées (OpenStreetMap)
+    python -m ingestion.pipeline --voies          # idem, en téléchargeant d'abord le tracé des lignes (SNCF Open Data)
 """
 
 from __future__ import annotations
@@ -17,9 +17,10 @@ import time
 from pathlib import Path
 
 import psycopg
+import requests
 
 from app import config
-from ingestion import charger, gares_sncf, gtfs, poi_datatourisme, telecharger, voies
+from ingestion import charger, gares_sncf, gtfs, poi_datatourisme, services, telecharger, voies
 
 
 def _premier(dossier: Path, *motifs: str) -> Path:
@@ -54,6 +55,8 @@ def executer(dossier: Path, journal=print, telecharger_voies: bool = False) -> d
     journal(f"      {len(liaisons)} liaisons directes entre {liaisons['origine_id'].nunique()} gares")
     if liaisons.empty:
         journal("      ATTENTION : aucune liaison calculée, la recherche par temps de trajet sera vide.")
+    services_gares, bilan_services = services.rassembler(dossier, gares, tables, arret_vers_gare)
+    journal(f"      services en gare (nombre de gares par service) : {bilan_services}")
     del tables  # les horaires ne servent plus : on libère la mémoire
     liaisons["trace"], bilan_voies = _suivre_les_voies(dossier, gares, liaisons["trace"].tolist(), telecharger_voies, journal)
 
@@ -66,7 +69,7 @@ def executer(dossier: Path, journal=print, telecharger_voies: bool = False) -> d
 
     journal("[4/4] Chargement et rapprochements dans PostgreSQL")
     with psycopg.connect(config.DATABASE_URL) as conn:
-        bilan_base = charger.charger(conn, gares, liaisons, poi)
+        bilan_base = charger.charger(conn, gares, liaisons, poi, services_gares)
         charger.journaliser(
             conn,
             [
@@ -77,30 +80,32 @@ def executer(dossier: Path, journal=print, telecharger_voies: bool = False) -> d
         )
     journal(f"      {bilan_base}")
     journal(f"Terminé en {time.time() - debut:.1f} s.")
-    return {"gares": bilan_gares, "arrets": bilan_arrets, "voies": bilan_voies, "poi": bilan_poi, "base": bilan_base}
+    return {"gares": bilan_gares, "arrets": bilan_arrets, "voies": bilan_voies, "services": bilan_services, "poi": bilan_poi, "base": bilan_base}
 
 
 def _suivre_les_voies(dossier: Path, gares, traces: list, telecharger_voies: bool, journal) -> tuple[list, dict]:
-    """Étape facultative : fait passer les tracés par les voies ferrées d'OpenStreetMap.
+    """Étape facultative : fait passer les tracés par les voies ferrées.
 
-    Sans fichier `voies-osm.json`, ou si le téléchargement échoue, les tracés restent tels quels.
+    Source par défaut : les lignes SNCF (`lignes-sncf.geojson`). À défaut, les voies
+    d'OpenStreetMap (`voies-osm.json`). Sans aucun des deux fichiers, les tracés restent tels quels.
     """
-    chemin_voies = dossier / "voies-osm.json"
+    chemin_sncf, chemin_osm = dossier / "lignes-sncf.geojson", dossier / "voies-osm.json"
     if telecharger_voies:
         try:
-            voies.telecharger(gares, chemin_voies)
-        except RuntimeError as erreur:
-            journal(f"      ATTENTION : {erreur}")
+            voies.telecharger_lignes_sncf(chemin_sncf)
+        except requests.RequestException as erreur:
+            journal(f"      ATTENTION : téléchargement des lignes SNCF impossible ({erreur})")
+    chemin_voies = chemin_sncf if chemin_sncf.exists() else chemin_osm
     if not chemin_voies.exists():
-        journal("      pas de fichier voies-osm.json : tracés en segments droits entre arrêts (voir l'option --voies)")
+        journal("      pas de fichier de voies : tracés en segments droits entre arrêts (voir l'option --voies)")
         return traces, {}
     try:
-        reseau = voies.lire(chemin_voies)
+        reseau = voies.lire_lignes_sncf(chemin_voies, gares) if chemin_voies == chemin_sncf else voies.lire(chemin_voies)
     except ValueError as erreur:  # fichier tronqué, ou page d'erreur à la place du JSON
         journal(f"      ATTENTION : {chemin_voies.name} est illisible ({erreur}). Le supprimer puis relancer avec --voies.")
         return traces, {}
     if reseau.remarque or not reseau.positions:
-        journal(f"      ATTENTION : réponse d'Overpass incomplète ({reseau.remarque or 'aucune voie'}). Supprimer {chemin_voies.name} puis relancer avec --voies.")
+        journal(f"      ATTENTION : fichier de voies incomplet ({reseau.remarque or 'aucune voie'}). Supprimer {chemin_voies.name} puis relancer avec --voies.")
     traces, bilan = voies.suivre(traces, reseau)
     bilan["noeuds_du_reseau"] = len(reseau.positions)
     journal(f"      tracés le long des voies ({chemin_voies.name}) : {bilan}")
@@ -113,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
     parseur = argparse.ArgumentParser(description="Ingestion des données du projet tourisme ferroviaire")
     parseur.add_argument("--exemple", action="store_true", help="utiliser le jeu d'essai fictif (donnees/exemple)")
     parseur.add_argument("--telecharger", action="store_true", help="télécharger les sources réelles avant de charger")
-    parseur.add_argument("--voies", action="store_true", help="télécharger les voies ferrées d'OpenStreetMap (une fois)")
+    parseur.add_argument("--voies", action="store_true", help="télécharger le tracé des lignes SNCF (une fois)")
     parseur.add_argument("--dossier", type=Path, help="dossier contenant les fichiers sources")
     args = parseur.parse_args(argv)
 

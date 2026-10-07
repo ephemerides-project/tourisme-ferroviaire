@@ -1,0 +1,22 @@
+[
+ {
+  "uic": "87747006",
+  "nom_de_la_gare": "Grenoble",
+  "accessibilite": "Information sonore en gare et/ou sur les quais"
+ },
+ {
+  "uic": "87747006",
+  "nom_de_la_gare": "Grenoble",
+  "accessibilite": "Boucle à induction magnétique"
+ },
+ {
+  "uic": "87747006",
+  "nom_de_la_gare": "Grenoble",
+  "accessibilite": "Boucle à induction magnétique"
+ },
+ {
+  "uic": "87396002",
+  "nom_de_la_gare": "Le Mans",
+  "accessibilite": "Boucle à induction magnétique"
+ }
+]

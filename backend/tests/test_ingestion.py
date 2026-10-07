@@ -109,7 +109,7 @@ def test_liaisons_avec_les_cars(gares, tables_gtfs):
 # --- Points d'intérêt ---------------------------------------------------------------
 def test_poi_nettoyage():
     poi, bilan = poi_datatourisme.normaliser_poi(poi_datatourisme.lire_csv(DOSSIER_EXEMPLE / "datatourisme-exemple.csv"))
-    assert (bilan["lus"], bilan["sans_nom_ou_position"], bilan["hors_region"], bilan["doublons"], bilan["retenus"]) == (31, 1, 1, 1, 28)
+    assert (bilan["lus"], bilan["sans_nom_ou_position"], bilan["hors_region"], bilan["doublons"], bilan["retenus"]) == (34, 1, 1, 1, 31)
     assert bilan["types_non_classes"] == [("SpaAndWellness", 1)]
     assert poi["id"].is_unique
     sentier = poi[poi["nom"] == "Sentier d'essai des Coteaux"].iloc[0]
