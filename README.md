@@ -32,6 +32,8 @@ docker compose run --rm api python -m ingestion.pipeline    # recharge la base e
 docker compose run --rm api pytest
 ```
 
+Si vous utilisez un outil local comme ollama, bien penser à ouvrir vers l'extérieur le port http
+
 - API : http://localhost:8000/docs
 - Interface : http://localhost:3000 (suivre son démarrage avec `docker compose logs -f web`, jusqu'à « Ready »)
 

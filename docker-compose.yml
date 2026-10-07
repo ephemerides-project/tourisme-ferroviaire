@@ -41,6 +41,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Interface Next.js sur http://localhost:3000 — le premier démarrage installe les dépendances (1 à 3 minutes).
   web:
